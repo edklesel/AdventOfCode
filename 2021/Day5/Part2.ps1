@@ -32,41 +32,28 @@ function New-Vent {
         [Int32]$y2
     )
 
+    # Diagonal
     if ($x1 -ne $x2 -and $y1 -ne $y2) {
-
         $x_range = $x1..$x2
         $y_range = $y1..$y2
-        $i = 0
-        while ($i -lt $x_range.Count) {
-            $x = $x_range[$i]
-            $y = $y_range[$i]
-            $global:Grid[$x][$y]++
-            $i++
-        }
-
     }
-
-    if ($x1 -eq $x2) {
-
-        $x = $x1
-        if ($y1 -lt $y2) {$top = $y1; $bottom = $y2}
-        else {$top = $y2; $bottom = $y1}
-
-        for ($y=$top; $y -le $bottom; $y++) {
-            $global:Grid[$x][$y]++
-        }
-
+    # Vertical
+    elseif ($x1 -eq $x2) {
+        $y_range = $y1..$y2
+        $x_range = $y_range | Foreach-Object {$x1}
     }
+    # Horizontal
     elseif ($y1 -eq $y2) {
+        $x_range = $x1..$x2
+        $y_range = $x_range | ForEach-Object {$y1}
+    }
 
-        $y = $y1
-        if ($x1 -lt $x2) {$left = $x1; $right = $x2}
-        else {$left = $x2; $right = $x1}
-
-        for ($x=$left; $x -le $right; $x++) {
-            $global:Grid[$x][$y]++
-        }
-
+    $i = 0
+    while ($i -lt $x_range.Count) {
+        $x = $x_range[$i]
+        $y = $y_range[$i]
+        $global:Grid[$x][$y]++
+        $i++
     }
     
 }
