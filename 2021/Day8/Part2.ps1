@@ -1,20 +1,5 @@
 [System.Collections.ArrayList]$Data = Get-Content "$PSScriptRoot/Input.txt"
 
-$Count = 0
-
-$Numbers = @{
-    '0' = 'ABCEFG';
-    '1' = 'CF';
-    '2' = 'ACDEG';
-    '3' = 'ACDFG';
-    '4' = 'BCDF';
-    '5' = 'ABDFG';
-    '6' = 'ABDEFG';
-    '7' = 'ACF';
-    '8' = 'ABCDEFG';
-    '9' = 'ABCDFG';
-}
-
 <#
 
 0256
@@ -32,8 +17,6 @@ $Numbers = @{
 
 Both 6 and 9 entirely contain 5,therefore if
  5 doesn't fit in a signal with 6 lines it must be 0
-
-
 
 #>
 
