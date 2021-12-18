@@ -19,10 +19,6 @@ $Hex = @{
     'F' = '1111'
 }
 
-$global:Counter = 0
-
-$Packets = [System.Collections.Generic.List[System.Collections.Generic.List[Int16]]]@()
-
 function ConvertFrom-Binary {
     param($BinaryString)
 
@@ -43,19 +39,11 @@ function Get-Packet {
     param(
         [System.Collections.Generic.List[Int16]]$Packet
     )
-    $Packets.Add($Packet)
-    $global:Counter++
     $Header_Version = ConvertFrom-Binary $Packet[0..2]
 
     $global:VersionTotal += $Header_Version
 
     $Header_Type = ConvertFrom-Binary $Packet[3..5]
-    switch ($Header_Type) {
-        4       { $Packet_Type = 'Literal' }
-        default { $Packet_Type = 'Operator' }
-    }
-
-    Write-Host "Counter: ${global:Counter}, Packet Type: $Packet_Type, Header Type: $Header_Type, Header Version: $Header_Version"
 
     $Body = $Packet[6..($Packet.Count-1)]
 
@@ -136,5 +124,4 @@ $VersionTotal = 0
 
 Get-Packet -Packet $Binary
 
-Write-Host ""
 Write-Host "Sum of all packet versions: $VersionTotal"
