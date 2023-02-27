@@ -2,7 +2,6 @@ package tools
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 )
@@ -20,7 +19,6 @@ func ReadInput(filename string) (content []string) {
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		fmt.Printf("Line: %s\n", line)
 		content = append(content, line)
 	}
 
