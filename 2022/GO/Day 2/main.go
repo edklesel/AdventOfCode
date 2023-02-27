@@ -9,18 +9,6 @@ import (
 
 var filename string = "day2.txt"
 
-func find(arr []string, str string) bool {
-
-	for i := 0; i < len(arr); i++ {
-		if arr[i] == str {
-			return true
-		}
-	}
-
-	return false
-
-}
-
 func main() {
 
 	input := tools.ReadInput(filename)
@@ -46,12 +34,12 @@ func main() {
 
 		// Win scenrarios
 		score += scores[your_move]
-		if find(win, opponent_move+your_move) {
+		if tools.Find(win, opponent_move+your_move) {
 			// fmt.Println("You Win")
 			score += 6
-		} else if find(lose, opponent_move+your_move) {
+		} else if tools.Find(lose, opponent_move+your_move) {
 			// fmt.Println("You lose")
-		} else if find(tie, opponent_move+your_move) {
+		} else if tools.Find(tie, opponent_move+your_move) {
 			// fmt.Println("Tied game")
 			score += 3
 		}
