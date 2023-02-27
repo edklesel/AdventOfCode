@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func ReadInput(filename string) {
+func ReadInput(filename string) (content []string) {
 
 	f, err := os.Open(filename)
 	if err != nil {
@@ -19,11 +19,15 @@ func ReadInput(filename string) {
 	scanner := bufio.NewScanner(f)
 
 	for scanner.Scan() {
-		fmt.Printf("Line: %s\n", scanner.Text())
+		line := scanner.Text()
+		fmt.Printf("Line: %s\n", line)
+		content = append(content, line)
 	}
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
+
+	return content
 
 }
