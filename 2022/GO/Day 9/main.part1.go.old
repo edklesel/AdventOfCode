@@ -1,0 +1,76 @@
+package main
+
+import (
+	"fmt"
+	"math"
+	"strconv"
+	"strings"
+
+	tools "github.com/edklesel/AdventOfCode/2022/GO/tools"
+)
+
+var filename string = "day9.txt"
+
+func main() {
+
+	input := tools.ReadInput(filename)
+
+	var tPositions = []string{}
+	var tPosition = [2]int{0, 0}
+	var tPositionString string
+	var hPosition = [2]int{0, 0}
+	var hPositionOld = [2]int{0, 0}
+
+	var dir string
+	var steps int
+	var increment int
+	var coord int
+
+	for _, row := range input {
+
+		dir = strings.Split(row, " ")[0]
+		steps, _ = strconv.Atoi(strings.Split(row, " ")[1])
+
+		switch dir {
+		case "R":
+			increment = 1
+			coord = 0
+		case "L":
+			increment = -1
+			coord = 0
+		case "U":
+			increment = 1
+			coord = 1
+		case "D":
+			increment = -1
+			coord = 1
+		}
+
+		for step := 0; step < steps; step++ {
+
+			hPositionOld = hPosition
+
+			hPosition[coord] += increment
+
+			if int(math.Abs(float64(tPosition[0]-hPosition[0]))) > 1 || int(math.Abs(float64(tPosition[1]-hPosition[1]))) > 1 {
+
+				tPosition[0] = hPositionOld[0]
+				tPosition[1] = hPositionOld[1]
+
+			}
+
+			tPositionString = fmt.Sprintf("(%d,%d)", tPosition[0], tPosition[1])
+
+			if !tools.Find(tPositions, tPositionString) {
+				tPositions = append(tPositions, tPositionString)
+			}
+
+		}
+
+	}
+
+	fmt.Println("")
+	fmt.Println("Part 1")
+	fmt.Printf("Total unique tail positions: %d\n", len(tPositions))
+
+}
