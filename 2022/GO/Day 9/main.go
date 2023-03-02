@@ -14,7 +14,6 @@ var filename string = "day9.txt"
 func snakeButNotSnake(input []string, nKnots int) (nTailPositions int) {
 
 	var positions = [][]int{}
-	var positionsOld = [][]int{}
 	var tPositions = []string{}
 	var tPositionString string
 	var dx int
@@ -22,7 +21,6 @@ func snakeButNotSnake(input []string, nKnots int) (nTailPositions int) {
 
 	for i := 0; i < nKnots; i++ {
 		positions = append(positions, []int{0, 0})
-		positionsOld = append(positionsOld, []int{0, 0})
 	}
 
 	var dir string
@@ -51,9 +49,6 @@ func snakeButNotSnake(input []string, nKnots int) (nTailPositions int) {
 		}
 
 		for step := 0; step < steps; step++ {
-
-			positionsOld[0][0] = positions[0][0]
-			positionsOld[0][1] = positions[0][1]
 
 			// Move the head
 			positions[0][coord] += increment
