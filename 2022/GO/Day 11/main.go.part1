@@ -1,0 +1,253 @@
+package main
+
+import (
+	"fmt"
+	"math"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
+
+	tools "github.com/edklesel/AdventOfCode/2022/GO/tools"
+)
+
+func removeItem(arr [][2]int64) [][2]int64 {
+	var newArr = [][2]int64{}
+	for index, val := range arr {
+		if index != 0 {
+			newArr = append(newArr, val)
+		}
+	}
+	return newArr
+}
+
+func manageMonkeys(rounds int, worry bool, input []string) int64 {
+
+	var totalInspections = []int64{}
+	var monkeysCurrent = [][][2]int64{}
+	var monkeysStarting = [][][2]int64{}
+	var monkeyIndexes = []int{}
+	var productDivisible int64 = 1
+	var item [2]int64
+	var err bool
+
+	// Set up the slices
+	monkeyMatch := regexp.MustCompile(`^Monkey \d+\:`)
+	for index, row := range input {
+		if monkeyMatch.MatchString(row) {
+			monkeyIndexes = append(monkeyIndexes, index)
+
+			// Multiply together the "divisible by" numbers
+			divisibleBy, _ := strconv.Atoi(strings.Split(strings.Split(input[index+3], ": ")[1], " ")[2])
+			productDivisible *= int64(divisibleBy)
+
+		}
+	}
+
+	if worry {
+		productDivisible *= 3
+	}
+
+	monkeysStarting = make([][][2]int64, len(monkeyIndexes))
+	monkeysCurrent = make([][][2]int64, len(monkeyIndexes))
+
+	// Extract the starting items
+	for monkeyNo, index := range monkeyIndexes {
+		for _, _item := range strings.Split(strings.Split(input[index+1], ": ")[1], ", ") {
+			item_int, _ := strconv.Atoi(_item)
+			item_int64 := int64(item_int)
+
+			item = [2]int64{item_int64 / productDivisible, item_int64 % productDivisible}
+
+			monkeysStarting[monkeyNo] = append(monkeysStarting[monkeyNo], item)
+		}
+	}
+
+	for i := 0; i < 1; i++ {
+		// for {
+
+		copy(monkeysCurrent, monkeysStarting)
+
+		fmt.Printf("\nStarting iteration %d\n", i)
+		fmt.Printf("Product divisible: %d\n", productDivisible)
+
+		totalInspections, err = iterateMonkeys(rounds, monkeysCurrent, monkeyIndexes, input, productDivisible, worry)
+
+		if err {
+			productDivisible += productDivisible //* 2
+		} else {
+			break
+		}
+
+	}
+
+	sort.Slice(totalInspections, func(i, j int) bool { return totalInspections[i] > totalInspections[j] })
+	return totalInspections[0] * totalInspections[1]
+
+}
+
+// Partly taken from
+// https://www.geeksforgeeks.org/multiply-large-integers-under-large-modulo/
+func moduloMultiplication(num1 int64, num2 int64, mod int64) (result [2]int64) {
+
+	result = [2]int64{0, 0}
+
+	// Work out (num1*num2) / mod
+	var largestNum int64
+	var smallerNum int64
+	var stage1 float64
+
+	switch num1 <= num2 {
+	case true:
+		largestNum = num2
+		smallerNum = num1
+	case false:
+		largestNum = num1
+		smallerNum = num2
+	}
+
+	stage1 = float64(largestNum) / float64(mod)
+	result[0] = int64(stage1 * float64(smallerNum))
+
+	// Work out (num1*num2) % mod
+	num1 = num1 % mod
+	for {
+		if num2%2 == 1 {
+			result[1] = (result[1] + num1) % mod
+		}
+		num1 = (num1 * 2) % mod
+		num2 >>= 1
+		if num2 <= 0 {
+			break
+		}
+
+	}
+
+	return result
+
+}
+
+func iterateMonkeys(rounds int, monkeysCurrent [][][2]int64, monkeyIndexes []int, input []string, productDivisible int64, worry bool) (totalInspections []int64, err bool) {
+
+	var operation string
+	var test string
+	var test_true string
+	var test_false string
+	var itemNew [2]int64
+	var valOp [2]int64
+	var valTest int64
+	var newMonkeyNo int
+	var _itemNew [2]int64
+
+	totalInspections = make([]int64, len(monkeyIndexes))
+
+	// Begin the rounds
+	for i := 1; i <= rounds; i++ {
+
+		// fmt.Printf("\nRound %d\n", i)
+		// fmt.Println(totalInspections)
+		// for index := range monkeysCurrent {
+		// 	fmt.Printf("Monkey %d: %d\n", index, monkeysCurrent[index])
+		// }
+
+		for monkeyNo, index := range monkeyIndexes {
+
+			operation = strings.Split(input[index+2], ": ")[1]
+			test = strings.Split(input[index+3], ": ")[1]
+			test_true = strings.Split(input[index+4], ": ")[1]
+			test_false = strings.Split(input[index+5], ": ")[1]
+
+			for _, item := range monkeysCurrent[monkeyNo] {
+
+				// Check if the value to be operated with is a number of
+				//  the item itself
+				switch strings.Split(operation, " ")[4] {
+				case "old":
+					valOp = item
+				default:
+					_valOp, _ := strconv.Atoi(strings.Split(operation, " ")[4])
+					valOp = [2]int64{0, int64(_valOp)}
+				}
+
+				// Extract the operation
+				switch strings.Split(operation, " ")[3] {
+				case "*":
+
+					itemNew[0] = item[0]*valOp[0]*productDivisible + item[0]*valOp[1] + item[1]*valOp[0]
+
+					_itemNew = moduloMultiplication(item[1], valOp[1], productDivisible)
+					itemNew[0] += _itemNew[0]
+					itemNew[1] = _itemNew[1]
+
+					if valOp == item {
+						fmt.Printf("**********\nMonkey %d Round %d SQUARE %d = %d\n*********\n\n", monkeyNo, i, item, itemNew)
+					}
+
+				case "+":
+					itemNew[0] = item[0] + valOp[0]
+					itemNew[1] = item[1] + valOp[1]
+				default:
+					panic(fmt.Sprintf("Unexpected operation %s\n", strings.Split(operation, " ")[3]))
+				}
+
+				// When the monkey gets bored, divide by 3
+				// Hacked for part 1 because I cba to work out division in modular arithmetic
+				if worry {
+					_itemNew := (itemNew[0]*productDivisible + itemNew[1]) / 3
+					itemNew[0] = _itemNew / productDivisible
+					itemNew[1] = _itemNew % productDivisible
+
+				}
+
+				// If the item is negative, the number has overflowed and so return an error
+				if itemNew[0] < 0 || itemNew[1] < 0 {
+					fmt.Println(item)
+					fmt.Println(strings.Join(input[monkeyIndexes[monkeyNo]:monkeyIndexes[monkeyNo]+6], "\n"))
+					fmt.Println(itemNew)
+					// fmt.Println(monkeysCurrent)
+					// os.Exit(0)
+					fmt.Printf("Round: %d\n", i)
+					return make([]int64, len(monkeyIndexes)), true
+				}
+
+				// Extract the test
+				_valTest, _ := strconv.Atoi(strings.Split(strings.Split(test, ": ")[0], " ")[2])
+				valTest = int64(_valTest)
+
+				if itemNew[1] == 0 || (itemNew[0] == 0 && (itemNew[1]%valTest == 0)) {
+					newMonkeyNo, _ = strconv.Atoi(strings.Split(strings.Split(test_true, ": ")[0], " ")[3])
+				} else {
+					newMonkeyNo, _ = strconv.Atoi(strings.Split(strings.Split(test_false, ": ")[0], " ")[3])
+				}
+
+				monkeysCurrent[newMonkeyNo] = append(monkeysCurrent[newMonkeyNo], itemNew)
+				monkeysCurrent[monkeyNo] = removeItem(monkeysCurrent[monkeyNo])
+				totalInspections[monkeyNo]++
+			}
+
+		}
+
+	}
+
+	return totalInspections, false
+
+}
+
+func main() {
+
+	fmt.Println(math.MaxInt64)
+	fmt.Println("9334018738956563719")
+
+	var filename string = "day11.test.txt"
+
+	input := tools.ReadInput(filename)
+
+	// fmt.Println("")
+	// fmt.Println("Part 1")
+	// fmt.Printf("Level of monkey business: %d\n", manageMonkeys(20, true, input))
+
+	fmt.Println("")
+	fmt.Println("Part 2")
+	fmt.Printf("Level of monkey business: %d\n", manageMonkeys(10000, false, input))
+
+}
