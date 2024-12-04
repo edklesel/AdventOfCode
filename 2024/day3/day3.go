@@ -1,7 +1,7 @@
 package main
 
 import (
-	"aoc24/utils"
+	"aoc/utils"
 	"fmt"
 	"regexp"
 	"strconv"
